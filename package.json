@@ -1,8 +1,9 @@
 {
-  "name": "resume-grader-ai",
-  "private": true,
-  "version": "0.0.0",
+  "name": "sarcastic-remarks",
+  "version": "1.0.0",
+  "description": "An AI-powered resume critique tool that provides brutally honest feedback in multiple languages. Get your resume graded like a strict teacher marking an answer sheet.",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -23,5 +24,20 @@
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/square-story/sarcastic-remarks"
+  },
+  "keywords": [
+    "resume",
+    "ai",
+    "critique",
+    "feedback",
+    "grading",
+    "pdf",
+    "document-analysis"
+  ],
+  "author": "square-story",
+  "license": "MIT"
 }

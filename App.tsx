@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, FileText, RefreshCcw, PenTool, Sparkles, X, Loader2 } from 'lucide-react';
+import { Upload, FileText, RefreshCcw, Sparkles, X, Loader2, PenTool, Github, Linkedin } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 import { analyzeResume } from './services/geminiService';
 import { extractTextFromFile } from './services/textExtractor';
@@ -79,7 +79,7 @@ const App: React.FC = () => {
             <header className="flex items-center justify-between p-4 md:p-6 bg-white border-b border-stone-200 shadow-sm z-20 flex-shrink-0">
                 <div className="flex items-center gap-2">
                     <PenTool className="w-5 h-5 md:w-6 md:h-6 text-ink-red flex-shrink-0" aria-hidden="true" />
-                    <h1 className="text-lg md:text-2xl font-bold text-slate-800">Resume Grader</h1>
+                    <h1 className="text-lg md:text-2xl font-bold text-slate-800">Sarcastic Remarks</h1>
                 </div>
                 {data && (
                     <Button variant="ghost" size="sm" onClick={() => setDrawerOpen(true)} aria-label="View results">
@@ -286,6 +286,37 @@ const App: React.FC = () => {
                     </Drawer.Content>
                 </Drawer.Portal>
             </Drawer.Root>
+
+            {/* Footer */}
+            <footer className="flex-shrink-0 border-t border-stone-200 bg-white py-4 px-4 md:px-6">
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-slate-600">
+                        <p>&copy; {new Date().getFullYear()} Sarcastic Remarks. All rights reserved.</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <a
+                            href="https://github.com/square-story"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+                            aria-label="GitHub Profile"
+                        >
+                            <Github className="w-5 h-5" aria-hidden="true" />
+                            <span className="text-sm font-medium">GitHub</span>
+                        </a>
+                        <a
+                            href="https://www.linkedin.com/in/sadikkp"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+                            aria-label="LinkedIn Profile"
+                        >
+                            <Linkedin className="w-5 h-5" aria-hidden="true" />
+                            <span className="text-sm font-medium">LinkedIn</span>
+                        </a>
+                    </div>
+                </div>
+            </footer>
 
             <Analytics />
         </div>
