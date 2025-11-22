@@ -1,5 +1,10 @@
 # Sarcastic Remarks 🎓
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/square-story/sarcastic-remarks/main/public/logo.png" alt="Sarcastic Remarks Logo" width="112" height="112" />
+</p>
+
+
 An AI-powered resume critique tool that provides brutally honest feedback in multiple languages. Get your resume graded like a strict teacher marking an answer sheet with red ink corrections, grades, and actionable feedback.
 
 🌐 **Live Site:** [sarcastic-remarks.vercel.app](https://sarcastic-remarks.vercel.app)

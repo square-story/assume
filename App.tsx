@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, FileText, RefreshCcw, Sparkles, X, Loader2, PenTool, Github, Linkedin } from 'lucide-react';
+import { Upload, FileText, RefreshCcw, Sparkles, X, Loader2, Github, Linkedin, Table2 } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 import { analyzeResume } from './services/geminiService';
 import { extractTextFromFile } from './services/textExtractor';
@@ -78,7 +78,7 @@ const App: React.FC = () => {
             {/* Header */}
             <header className="flex items-center justify-between p-4 md:p-6 bg-white border-b border-stone-200 shadow-sm z-20 flex-shrink-0">
                 <div className="flex items-center gap-2">
-                    <PenTool className="w-5 h-5 md:w-6 md:h-6 text-ink-red flex-shrink-0" aria-hidden="true" />
+                    <Table2 className="w-5 h-5 md:w-6 md:h-6 text-ink-red flex-shrink-0" aria-hidden="true" />
                     <h1 className="text-lg md:text-2xl font-bold text-slate-800">Sarcastic Remarks</h1>
                 </div>
                 {data && (
