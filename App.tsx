@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, RefreshCcw, PenTool, Sparkles, Menu, X } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import { analyzeResume } from './services/geminiService';
 import { ResumeData } from './types';
 import GradedView from './components/GradedView';
 import ScoreStamp from './components/ScoreStamp';
+import LanguageSelector, { Language } from './components/LanguageSelector';
 import Button from './components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './components/ui/Card';
 import { Drawer } from 'vaul';
@@ -39,16 +41,17 @@ const App: React.FC = () => {
     const [data, setData] = useState<ResumeData | null>(null);
     const [inputMode, setInputMode] = useState<'upload' | 'text'>('text');
     const [textInput, setTextInput] = useState(SAMPLE_RESUME);
+    const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleAnalyze = async () => {
-        if (!textInput.trim()) return;
+        if (!textInput.trim() || !selectedLanguage) return;
         setLoading(true);
         setData(null);
 
         try {
-            const result = await analyzeResume(textInput);
+            const result = await analyzeResume(textInput, selectedLanguage);
             setData({
                 text: textInput,
                 analysis: result,
@@ -76,6 +79,7 @@ const App: React.FC = () => {
     const reset = () => {
         setData(null);
         setTextInput(SAMPLE_RESUME);
+        setSelectedLanguage(null);
         setDrawerOpen(false);
     };
 
@@ -114,6 +118,11 @@ const App: React.FC = () => {
                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
                         {!data ? (
                             <>
+                                <LanguageSelector
+                                    onSelect={setSelectedLanguage}
+                                    selectedLanguage={selectedLanguage}
+                                />
+
                                 <div className="space-y-4">
                                     <label className="block text-sm font-semibold text-slate-700">
                                         How would you like to submit?
@@ -125,8 +134,8 @@ const App: React.FC = () => {
                                             aria-controls="text-panel"
                                             onClick={() => setInputMode('text')}
                                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${inputMode === 'text'
-                                                    ? 'bg-slate-900 text-white'
-                                                    : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
+                                                ? 'bg-slate-900 text-white'
+                                                : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
                                                 }`}
                                         >
                                             Paste Text
@@ -137,8 +146,8 @@ const App: React.FC = () => {
                                             aria-controls="upload-panel"
                                             onClick={() => setInputMode('upload')}
                                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${inputMode === 'upload'
-                                                    ? 'bg-slate-900 text-white'
-                                                    : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
+                                                ? 'bg-slate-900 text-white'
+                                                : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
                                                 }`}
                                         >
                                             Upload .txt
@@ -254,7 +263,7 @@ const App: React.FC = () => {
                         ) : (
                             <Button
                                 onClick={handleAnalyze}
-                                disabled={loading || !textInput.trim()}
+                                disabled={loading || !textInput.trim() || !selectedLanguage}
                                 className="w-full"
                             >
                                 {loading ? (
@@ -265,7 +274,7 @@ const App: React.FC = () => {
                                 ) : (
                                     <>
                                         <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
-                                        Grade My Resume
+                                        {!selectedLanguage ? 'Select Language First' : 'Grade My Resume'}
                                     </>
                                 )}
                             </Button>
@@ -358,6 +367,90 @@ const App: React.FC = () => {
                     </Drawer.Portal>
                 </Drawer.Root>
 
+                {/* Mobile Input Section */}
+                {!data && (
+                    <div className="md:hidden w-full bg-white border-t border-stone-200 p-4 space-y-4 max-h-[50vh] overflow-y-auto">
+                        <LanguageSelector
+                            onSelect={setSelectedLanguage}
+                            selectedLanguage={selectedLanguage}
+                        />
+                        <div className="space-y-3">
+                            <div className="flex gap-2" role="tablist" aria-label="Input method">
+                                <button
+                                    role="tab"
+                                    aria-selected={inputMode === 'text'}
+                                    onClick={() => setInputMode('text')}
+                                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 ${inputMode === 'text'
+                                            ? 'bg-slate-900 text-white'
+                                            : 'bg-stone-100 text-slate-600'
+                                        }`}
+                                >
+                                    Paste Text
+                                </button>
+                                <button
+                                    role="tab"
+                                    aria-selected={inputMode === 'upload'}
+                                    onClick={() => setInputMode('upload')}
+                                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 ${inputMode === 'upload'
+                                            ? 'bg-slate-900 text-white'
+                                            : 'bg-stone-100 text-slate-600'
+                                        }`}
+                                >
+                                    Upload
+                                </button>
+                            </div>
+                            {inputMode === 'upload' ? (
+                                <div
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            fileInputRef.current?.click();
+                                        }
+                                    }}
+                                    className="border-2 border-dashed border-stone-300 rounded-lg p-6 text-center"
+                                >
+                                    <Upload className="w-8 h-8 text-stone-400 mx-auto mb-2" aria-hidden="true" />
+                                    <p className="text-sm text-slate-600">Tap to upload</p>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        accept=".txt,.md"
+                                        onChange={handleFileUpload}
+                                    />
+                                </div>
+                            ) : (
+                                <textarea
+                                    className="w-full h-32 p-3 rounded-lg border border-stone-200 text-sm font-mono resize-none focus:ring-2 focus:ring-slate-900"
+                                    placeholder="Paste resume here..."
+                                    value={textInput}
+                                    onChange={(e) => setTextInput(e.target.value)}
+                                />
+                            )}
+                            <Button
+                                onClick={handleAnalyze}
+                                disabled={loading || !textInput.trim() || !selectedLanguage}
+                                className="w-full"
+                            >
+                                {loading ? (
+                                    <>
+                                        <RefreshCcw className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                                        Grading...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
+                                        {!selectedLanguage ? 'Select Language First' : 'Grade My Resume'}
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Main Content / Paper View */}
                 <main className="flex-1 bg-stone-200/50 overflow-hidden relative flex flex-col">
                     <div
@@ -432,6 +525,7 @@ const App: React.FC = () => {
                     </div>
                 </main>
             </div>
+            <Analytics />
         </div>
     );
 };
