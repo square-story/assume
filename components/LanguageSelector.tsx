@@ -1,6 +1,5 @@
 import React from 'react';
-import { Globe } from 'lucide-react';
-import Button from './ui/Button';
+import { Globe, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/Card';
 
 export type Language = 'english' | 'malayalam' | 'hindi' | 'spanish' | 'french' | 'german' | 'japanese' | 'chinese';
@@ -34,31 +33,33 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onSelect, selectedL
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {languages.map((lang) => (
-                        <button
-                            key={lang.code}
-                            onClick={() => onSelect(lang.code)}
-                            className={`
-                p-4 rounded-lg border-2 transition-all duration-200
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2
-                ${selectedLanguage === lang.code
-                                    ? 'border-ink-red bg-red-50 text-ink-red font-semibold'
-                                    : 'border-stone-200 bg-white text-slate-700 hover:border-stone-300 hover:bg-stone-50'
-                                }
-              `}
-                            aria-pressed={selectedLanguage === lang.code}
-                            aria-label={`Select ${lang.name} language`}
-                        >
-                            <div className="text-sm font-medium">{lang.name}</div>
-                            <div className="text-xs text-stone-500 mt-1">{lang.native}</div>
-                        </button>
-                    ))}
+                <div className="relative">
+                    <select
+                        value={selectedLanguage || ''}
+                        onChange={(e) => onSelect(e.target.value as Language)}
+                        className="w-full appearance-none bg-white border-2 border-stone-200 rounded-lg px-4 py-3 pr-10 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
+                        aria-label="Select language"
+                    >
+                        <option value="" disabled>
+                            Choose a language...
+                        </option>
+                        {languages.map((lang) => (
+                            <option key={lang.code} value={lang.code}>
+                                {lang.name} ({lang.native})
+                            </option>
+                        ))}
+                    </select>
+                    <ChevronDown
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"
+                        aria-hidden="true"
+                    />
                 </div>
                 {selectedLanguage && (
                     <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <p className="text-sm text-green-800">
-                            <span className="font-semibold">Selected:</span> {languages.find((l) => l.code === selectedLanguage)?.name}
+                            <span className="font-semibold">Selected:</span>{' '}
+                            {languages.find((l) => l.code === selectedLanguage)?.name} (
+                            {languages.find((l) => l.code === selectedLanguage)?.native})
                         </p>
                     </div>
                 )}
@@ -68,4 +69,3 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onSelect, selectedL
 };
 
 export default LanguageSelector;
-
