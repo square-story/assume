@@ -1,10 +1,10 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
-// Configure PDF.js worker - use a more reliable CDN
+// Configure PDF.js worker - use local file from public directory
 if (typeof window !== 'undefined') {
-    // Use unpkg CDN which is more reliable
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+    // Use local worker file (copied to public directory during build)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
@@ -16,10 +16,12 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
         if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
             try {
                 const arrayBuffer = await file.arrayBuffer();
+
                 const loadingTask = pdfjsLib.getDocument({
                     data: arrayBuffer,
-                    verbosity: 0 // Suppress console warnings
+                    verbosity: 0, // Suppress console warnings
                 });
+
                 const pdf = await loadingTask.promise;
                 let fullText = '';
 
@@ -42,11 +44,24 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 
                 const extractedText = fullText.trim();
                 if (!extractedText) {
-                    throw new Error('No text could be extracted from the PDF. The file might be image-based or corrupted.');
+                    throw new Error(
+                        'No text could be extracted from the PDF. The file might be image-based or corrupted.'
+                    );
                 }
                 return extractedText;
             } catch (pdfError) {
                 if (pdfError instanceof Error) {
+                    // Check if it's a worker loading error
+                    if (
+                        pdfError.message.includes('worker') ||
+                        pdfError.message.includes('fetch') ||
+                        pdfError.message.includes('imported module') ||
+                        pdfError.message.includes('Setting up fake worker')
+                    ) {
+                        throw new Error(
+                            'PDF extraction failed: Unable to load PDF worker. Please try using a DOCX file instead, or ensure the worker file is accessible.'
+                        );
+                    }
                     throw new Error(`PDF extraction failed: ${pdfError.message}`);
                 }
                 throw new Error('Failed to extract text from PDF file');
@@ -75,10 +90,7 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
         }
 
         // Handle DOC files (older format - limited support)
-        if (
-            fileType === 'application/msword' ||
-            fileName.endsWith('.doc')
-        ) {
+        if (fileType === 'application/msword' || fileName.endsWith('.doc')) {
             // DOC files are binary and harder to parse client-side
             // We'll try to read as text first, but this may not work well
             try {
@@ -90,7 +102,9 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
             } catch (e) {
                 // Fall through to error
             }
-            throw new Error('DOC file format is not fully supported. Please convert to DOCX or PDF for better results.');
+            throw new Error(
+                'DOC file format is not fully supported. Please convert to DOCX or PDF for better results.'
+            );
         }
 
         // Handle plain text files
@@ -102,7 +116,9 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
             return text.trim();
         }
 
-        throw new Error(`Unsupported file type: ${fileType || 'unknown'}. Please upload PDF, DOCX, DOC, TXT, or MD files.`);
+        throw new Error(
+            `Unsupported file type: ${fileType || 'unknown'}. Please upload PDF, DOCX, DOC, TXT, or MD files.`
+        );
     } catch (error) {
         if (error instanceof Error) {
             throw error; // Re-throw with original message
